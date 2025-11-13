@@ -1,11 +1,12 @@
 server {
     listen       80;
     server_name  localhost;
-    root         /var/www/app;
+    # Laravel's web root must point to the public directory
+    root         /var/www/app/public;
 
     #charset koi8-r;
-    access_log  /var/log/nginx/localhost.access.log  main;
-    error_log   /var/log/nginx/localhost.error.log  info;
+    access_log  /var/log/nginx/$APP_CONTAINER.access.log  main;
+    error_log   /var/log/nginx/$APP_CONTAINER.error.log  info;
 
     location ~ .*\.(?:gif|jpg|jpeg|pdf|ico|png)$ {
         try_files $uri =404;
@@ -17,7 +18,8 @@ server {
 
     location / {
         index index.php index.html index.htm;
-	    try_files $uri $uri/ /index.php?q=$uri&$args;
+        # Serve existing files or fallback to Laravel's front controller
+        try_files $uri $uri/ /index.php?$query_string;
     }
 
     #error_page  404              /404.html;
@@ -34,7 +36,7 @@ server {
     location ~ \.php$ {
         try_files $uri =404;
         fastcgi_split_path_info ^(.+\.php)(/.+)$;
-        fastcgi_pass php:9000;
+        fastcgi_pass $APP_CONTAINER:9000;
         fastcgi_index index.php;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;

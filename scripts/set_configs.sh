@@ -13,5 +13,5 @@ xdebug_file="${parent_dir}/services/php/conf.d/xdebug.ini"
 [[ ! -f $xdebug_file ]] && cp "${xdebug_file}.dist" "$xdebug_file"
 
 # Nginx
-nginx_file="${parent_dir}/services/nginx/conf.d/default.conf"
+nginx_file="${parent_dir}/services/nginx/conf.d/default.conf.template"
 [[ ! -f $nginx_file ]] && cp "${nginx_file}.dist" "$nginx_file"
