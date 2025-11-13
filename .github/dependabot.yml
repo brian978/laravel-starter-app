@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: "composer"
+    directory: "/app"
+    schedule:
+      interval: "weekly"
+      time: "04:00"
+    open-pull-requests-limit: 1
+    groups:
+      all-composer-dependencies:
+        patterns:
+          - "*"
+  - package-ecosystem: "npm"
+    directory: "/app"
+    schedule:
+      interval: "weekly"
+      time: "04:00"
+    open-pull-requests-limit: 1
+    groups:
+      all-npm-dependencies:
+        patterns:
+          - "*"

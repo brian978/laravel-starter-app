@@ -1,0 +1,95 @@
+name: Unit tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+defaults:
+  run:
+    working-directory: app/
+
+jobs:
+  laravel-tests:
+
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4.7
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: testing
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+
+    - uses: actions/checkout@v3
+    - name: Copy .env
+      run: cp .env.testing .env
+
+    - name: Install Dependencies
+      run: |
+        composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        npm install
+        npm run build
+
+    - name: Generate key
+      run: php artisan key:generate
+
+    - name: Directory Permissions
+      run: |
+        mkdir -p storage
+        mkdir -p storage/framework
+        mkdir -p storage/framework/sessions
+        mkdir -p storage/framework/views
+        mkdir -p storage/framework/cache
+        chmod -R 777 storage
+
+    - name: Run migrations
+      env:
+        DB_CONNECTION: mysql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_DATABASE: testing
+        DB_USERNAME: root
+        DB_PASSWORD: password
+        CACHE_DRIVER: array
+      run: php artisan migrate --force
+
+    - name: Execute unit tests
+      env:
+        DB_CONNECTION: mysql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_DATABASE: testing
+        DB_USERNAME: root
+        DB_PASSWORD: password
+        CACHE_DRIVER: array
+      run: php artisan test --testsuite=Unit
+
+    - name: Execute integration tests
+      env:
+        DB_CONNECTION: mysql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_DATABASE: testing
+        DB_USERNAME: root
+        DB_PASSWORD: password
+        CACHE_DRIVER: array
+      run: php artisan test --testsuite=Integration
+
+    - name: Execute acceptance tests
+      env:
+        DB_CONNECTION: mysql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_DATABASE: testing
+        DB_USERNAME: root
+        DB_PASSWORD: password
+        CACHE_DRIVER: array
+      run: php artisan test --testsuite=Feature
